@@ -1,6 +1,7 @@
 package main
 
 import (
+	"beagle/logger"
 	"beagle/spotter"
 	"flag"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/spf13/viper"
 )
+
+var log = logger.New("beagle")
 
 type Config struct {
 	ProcessFilter string
@@ -35,6 +38,10 @@ func main() {
 	maxTime := viper.GetInt("max-time")
 
 	for range time.Tick(tickerDuration) {
-		spotter.FindOldProcesses(processFilter, maxTime)
+		procs := spotter.FindOldProcesses(processFilter, maxTime)
+		for _, p := range procs {
+			log.Info(p)
+
+		}
 	}
 }

@@ -43,7 +43,6 @@ func FindOldProcesses(processFilter string, seconds int) []Process {
 	cmdGrep.Wait()
 	cmdAwk.Wait()
 
-	log.Infow("Detected long running processes", "processes", out.String())
 	return parseRawProcesses(out.String())
 }
 
