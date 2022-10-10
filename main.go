@@ -2,6 +2,7 @@ package main
 
 import (
 	"beagle/logger"
+	"beagle/slack"
 	"beagle/spotter"
 	"flag"
 	"fmt"
@@ -36,12 +37,22 @@ func main() {
 
 	processFilter := viper.GetString("process-filter")
 	maxTime := viper.GetInt("max-time")
+	slackHook := viper.GetString("slack-hook")
 
 	for range time.Tick(tickerDuration) {
 		procs := spotter.FindOldProcesses(processFilter, maxTime)
 		for _, p := range procs {
 			log.Info(p)
-
+			if slackHook != "" {
+				body := map[string]interface{}{
+					"type": "section",
+					"text": map[string]interface{}{
+						"type": "plain_text",
+						"text": "This is a plain text section block.",
+					},
+				}
+				slack.Notify(slackHook, body)
+			}
 		}
 	}
 }

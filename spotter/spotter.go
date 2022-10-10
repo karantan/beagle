@@ -62,7 +62,7 @@ func parseRawProcesses(lines string) (procs []Process) {
 		duration, _ := strconv.Atoi(chunks[0])
 		pid, _ := strconv.Atoi(chunks[1])
 		procs = append(procs, Process{
-			Duration: time.Duration(duration),
+			Duration: time.Duration(duration) * time.Second,
 			PID:      pid,
 			Owner:    chunks[len(chunks)-1],
 		})
