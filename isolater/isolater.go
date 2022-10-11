@@ -4,10 +4,7 @@ import (
 	"beagle/logger"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
-	"strconv"
-	"strings"
 )
 
 var log = logger.New("cgroup-mover")
@@ -17,35 +14,16 @@ const (
 	CGROUP_PROCS = "cgroup.procs"
 )
 
-// Isolate moves all processes owned by user `user` to a `cgroup` cgroup.
-func Isolate(user, cgroup string) {
-	pids := findUserProcesses(user)
-
-	if err := addToCgroup(pids, path.Join(CGROUP_PATH, cgroup, CGROUP_PROCS)); err != nil {
+// Isolate moves process `pid` to a `cgroup` cgroup.
+func Isolate(pid int, cgroup string) {
+	if err := addToCgroup(pid, path.Join(CGROUP_PATH, cgroup, CGROUP_PROCS)); err != nil {
 		log.Errorf("Error trying to add pids to cgroup (%s)", cgroup)
 	} else {
-		for _, p := range pids {
-			log.Infof("%d -> %s", p, cgroup)
-		}
+		log.Infof("%d -> %s", pid, cgroup)
 	}
 }
 
-func findUserProcesses(user string) (childPids []int) {
-	cmd := exec.Command("pgrep", "--uid", user)
-	out, err := cmd.Output()
-	if err != nil {
-		log.Warnf("Problems finding processes for user %s", user)
-		log.Error(err)
-	}
-	pidsRaw := strings.Split(strings.TrimSpace(string(out)), "\n")
-	for _, p := range pidsRaw {
-		i, _ := strconv.Atoi(p)
-		childPids = append(childPids, i)
-	}
-	return
-}
-
-func addToCgroup(pids []int, cgroupProcsFile string) error {
+func addToCgroup(pid int, cgroupProcsFile string) error {
 	f, err := os.OpenFile(cgroupProcsFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		log.Error(err)
@@ -53,20 +31,9 @@ func addToCgroup(pids []int, cgroupProcsFile string) error {
 	}
 	defer f.Close()
 
-	for _, pid := range pids {
-		if _, err := f.WriteString(fmt.Sprintf("%d\n", pid)); err != nil {
-			log.Errorw("Couldn't write pid to the groupc.procs file", "pid", pid, "err", err.Error())
-			return err
-		}
+	if _, err := f.WriteString(fmt.Sprintf("%d\n", pid)); err != nil {
+		log.Errorw("Couldn't write pid to the groupc.procs file", "pid", pid, "err", err.Error())
+		return err
 	}
 	return nil
-}
-
-func pidExists(pid int, pids []int) bool {
-	for _, p := range pids {
-		if p == pid {
-			return true
-		}
-	}
-	return false
 }
