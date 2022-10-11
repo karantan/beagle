@@ -57,7 +57,7 @@ func parseRawProcesses(lines string) (procs []Process) {
 	}
 	pidsRaw := strings.Split(trimmed, "\n")
 	for _, line := range pidsRaw {
-		chunks := strings.Split(strings.TrimSpace(line), " ")
+		chunks := strings.Fields(strings.TrimSpace(line))
 
 		duration, _ := strconv.Atoi(chunks[0])
 		pid, _ := strconv.Atoi(chunks[1])
