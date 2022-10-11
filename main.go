@@ -27,7 +27,8 @@ func main() {
 
 	if cgroup != "" {
 		if _, err := os.Stat(path.Join(isolater.CGROUP_PATH, cgroup)); os.IsNotExist(err) {
-			log.Panicf("Cgroup %s doesn't exist", path.Join(isolater.CGROUP_PATH, cgroup))
+			log.Errorf("Cgroup %s doesn't exist", path.Join(isolater.CGROUP_PATH, cgroup))
+			return
 		}
 	}
 
@@ -39,15 +40,15 @@ func main() {
 		procs := spotter.FindOldProcesses(processFilter, int(interval.Seconds()))
 		for _, p := range procs {
 			log.Info(p)
+
 			msg := &slack.WebhookMessage{
-				Text:    fmt.Sprintf("🐶 I isolated %d process (%s) because it has been running for more than %s", p.PID, p.Owner, p.Duration.Round(time.Second)),
+				Text:    fmt.Sprintf("🐶 I spotted PHP-FPM pool for user %s has been running for more than %s", p.Owner, p.Duration.Round(time.Second)),
 				Channel: slackChan,
 			}
-
 			if cgroup != "" {
 				isolater.Isolate(p.PID, cgroup)
 				msg = &slack.WebhookMessage{
-					Text:    fmt.Sprintf("🐶 I spotted PHP-FPM pool for user %s has been running for more than %s", p.Owner, p.Duration.Round(time.Second)),
+					Text:    fmt.Sprintf("🐶 I isolated %d process (%s) because it has been running for more than %s", p.PID, p.Owner, p.Duration.Round(time.Second)),
 					Channel: slackChan,
 				}
 			}
