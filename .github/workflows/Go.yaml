@@ -11,7 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v17
+      with:
+        nix_path: nixpkgs=channel:nixos-22.05
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -23,3 +26,6 @@ jobs:
 
     - name: Test
       run: go test --tags=integration -v ./...
+
+    - name: Build Nix Package
+      run: nix-build -E "with import <nixpkgs> {}; callPackage ./default.nix {}" --no-out-link

@@ -1,4 +1,4 @@
-# Beagle
+# Beagle ![gha build](https://github.com/karantan/beagle/workflows/Go/badge.svg)
 Beagle is a lightweight tool for finding long-running processes and potentially isolating
 them. It also reports its findings on Slack (if configured).
 
