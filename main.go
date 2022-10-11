@@ -24,8 +24,9 @@ func main() {
 
 	slackHook := os.Getenv("SLACK_NOTIFICATION")
 
+	ticker := time.NewTicker(interval)
 	log.Info("Checking for processes every ", interval)
-	for range time.Tick(interval) {
+	for ; true; <-ticker.C {
 		procs := spotter.FindOldProcesses(processFilter, int(interval.Seconds()))
 		for _, p := range procs {
 			log.Info(p)
