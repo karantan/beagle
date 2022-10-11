@@ -12,3 +12,37 @@ without us knowing about it.
 
 Beagle (tool) will find it, report it and potentially isolate it in a separate cgroup
 where it can be controlled until we figure out what to do with it.
+
+## Configuration
+
+Update settings in `config.yaml` and set `SLACK_NOTIFICATION` env var. This needs to be
+an Incoming WebHook url.
+
+If you don't want slack reporting, then just leave `slack-channel` field empty (in the
+`config.yaml` file). By default it will always report to the stdout.
+
+
+## Nix
+
+Build it with nix by running:
+```bash
+$ nix-build -E "with import <nixpkgs> {}; callPackage ./default.nix {}"
+```
+
+Add it to NixOS:
+```bash
+{ config, pkgs, lib, ... }:
+let
+
+  psusage = pkgs.callPackage (import (fetchGit {
+    url = "git@github.com:karantan/beagle";
+    ref = "master";
+    rev = "<commit>"; # v1.x.y
+  })) { };
+
+in {
+  environment.systemPackages = [
+    beagle
+  ];
+}
+```

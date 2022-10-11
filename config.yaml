@@ -1,4 +1,4 @@
 process-filter: "php-fpm: pool"
-max-time: 2
+max-time: 60
 cgroup: slow
-slack-hook: https://hooks.slack.com/services/secret
+slack-channel:

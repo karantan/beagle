@@ -5,6 +5,7 @@ import (
 	"beagle/spotter"
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/slack-go/slack"
@@ -12,12 +13,6 @@ import (
 )
 
 var log = logger.New("beagle")
-
-type Config struct {
-	ProcessFilter string
-	CGroup        string
-	SlackHook     string
-}
 
 func init() {
 	var cfgFile string
@@ -32,19 +27,23 @@ func init() {
 
 func main() {
 	var tickerDuration time.Duration
-	flag.DurationVar(&tickerDuration, "tickerDuration", 5*time.Second, "How frequently should I check for long-running processes?")
+	flag.DurationVar(&tickerDuration, "tickerDuration", 5*time.Minute, "How frequently should I check for long-running processes?")
 	flag.Parse()
 
 	processFilter := viper.GetString("process-filter")
 	maxTime := viper.GetInt("max-time")
-	slackHook := viper.GetString("slack-hook")
+	slackChan := viper.GetString("slack-channel")
+	slackHook := os.Getenv("SLACK_NOTIFICATION")
 
 	for range time.Tick(tickerDuration) {
 		procs := spotter.FindOldProcesses(processFilter, maxTime)
 		for _, p := range procs {
 			log.Info(p)
 			if slackHook != "" {
-				msg := &slack.WebhookMessage{Text: fmt.Sprintf("PHP-FPM pool for user %s has been running for more than %s", p.Owner, p.Duration.Round(time.Minute))}
+				msg := &slack.WebhookMessage{
+					Text:    fmt.Sprintf("🐶: I spotted PHP-FPM pool for user %s has been running for more than %s", p.Owner, p.Duration.Round(time.Second)),
+					Channel: slackChan,
+				}
 				if err := slack.PostWebhook(slackHook, msg); err != nil {
 					log.Error(err)
 				}
