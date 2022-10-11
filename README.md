@@ -15,11 +15,12 @@ where it can be controlled until we figure out what to do with it.
 
 ## Configuration
 
-Update settings in `config.yaml` and set `SLACK_NOTIFICATION` env var. This needs to be
-an Incoming WebHook url.
+By default Beagle will always report to the stdout.
 
-If you don't want slack reporting, then just leave `slack-channel` field empty (in the
-`config.yaml` file). By default it will always report to the stdout.
+Set `SLACK_NOTIFICATION` env var (Incoming WebHook url) if you want slack notifications
+and make sure you provide slack channel information via `-slack` flag.
+
+All other settings are set via flags. Run it with `--help` to see all the options.
 
 
 ## Nix

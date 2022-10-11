@@ -1,4 +1,0 @@
-process-filter: "php-fpm: pool"
-max-time: 60
-cgroup: slow
-slack-channel:

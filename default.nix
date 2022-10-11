@@ -4,7 +4,7 @@
 
 buildGoModule rec {
   pname = "beagle";
-  version = "1.0.0";
+  version = "1.0.1";
 
   src = nix-gitignore.gitignoreSource [ ] ./.;
 
@@ -15,5 +15,5 @@ buildGoModule rec {
   # hash mismatch in fixed-output derivation '/nix/store/m1ga09c0z1a6n7rj8ky3s31dpgalsn0n-source':
   # wanted: sha256:0000000000000000000000000000000000000000000000000000
   # got:    sha256:173gxk0ymiw94glyjzjizp8bv8g72gwkjhacigd1an09jshdrjb4
-  vendorSha256 = "18929dvq195pvzz7wv6mf79pzsyyfa14vyx7dzfcfams151r87ha";
+  vendorSha256 = "1mpck9r83z59b4ldzmp300b4jqk3l88nw4l29nfxzf63dq46shla";
 }
