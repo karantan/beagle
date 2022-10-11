@@ -2,12 +2,12 @@ package main
 
 import (
 	"beagle/logger"
-	"beagle/slack"
 	"beagle/spotter"
 	"flag"
 	"fmt"
 	"time"
 
+	"github.com/slack-go/slack"
 	"github.com/spf13/viper"
 )
 
@@ -44,14 +44,10 @@ func main() {
 		for _, p := range procs {
 			log.Info(p)
 			if slackHook != "" {
-				body := map[string]interface{}{
-					"type": "section",
-					"text": map[string]interface{}{
-						"type": "plain_text",
-						"text": "This is a plain text section block.",
-					},
+				msg := &slack.WebhookMessage{Text: fmt.Sprintf("PHP-FPM pool for user %s has been running for more than %s", p.Owner, p.Duration.Round(time.Minute))}
+				if err := slack.PostWebhook(slackHook, msg); err != nil {
+					log.Error(err)
 				}
-				slack.Notify(slackHook, body)
 			}
 		}
 	}
