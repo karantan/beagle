@@ -7,7 +7,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path"
 	"time"
 
 	"github.com/slack-go/slack"
@@ -26,13 +25,6 @@ func main() {
 	flag.StringVar(&cgroup, "cgroup", "", "Cgroup TO which long running processes will be moved.")
 	flag.Parse()
 
-	if cgroup != "" {
-		if _, err := os.Stat(path.Join(isolater.CGROUP_PATH, cgroup)); os.IsNotExist(err) {
-			log.Errorf("Cgroup %s doesn't exist", path.Join(isolater.CGROUP_PATH, cgroup))
-			return
-		}
-	}
-
 	slackHook := os.Getenv("SLACK_NOTIFICATION")
 	hostname, _ := os.Hostname()
 
@@ -43,18 +35,17 @@ func main() {
 		for _, p := range procs {
 			log.Info(p)
 
-			msg := &slack.WebhookMessage{
-				Text:    fmt.Sprintf("🐶 [%s] I spotted PHP-FPM pool for user %s has been running for more than %s", hostname, p.Owner, p.Duration.Round(time.Second)),
-				Channel: slackChan,
-			}
+			body := fmt.Sprintf("🐶 [%s] I spotted PHP-FPM pool for user %s has been running for more than %s", hostname, p.Owner, p.Duration.Round(time.Second))
 			if cgroup != "" {
-				isolater.Isolate(p.PID, cgroup)
-				msg = &slack.WebhookMessage{
-					Text:    fmt.Sprintf("🐶 [%s] I isolated %d process (%s) because it has been running for more than %s", hostname, p.PID, p.Owner, p.Duration.Round(time.Second)),
-					Channel: slackChan,
+				err := isolater.Isolate(p.PID, cgroup)
+				if err != nil {
+					body = fmt.Sprintf("🐶 [%s] I failed trying to isolate %d process (%s) because it has been running for more than %s", hostname, p.PID, p.Owner, p.Duration.Round(time.Second))
+				} else {
+					body = fmt.Sprintf("🐶 [%s] I isolated %d process (%s) because it has been running for more than %s", hostname, p.PID, p.Owner, p.Duration.Round(time.Second))
 				}
 			}
 			if slackHook != "" {
+				msg := &slack.WebhookMessage{Text: body, Channel: slackChan}
 				if err := slack.PostWebhook(slackHook, msg); err != nil {
 					log.Error(err)
 				}

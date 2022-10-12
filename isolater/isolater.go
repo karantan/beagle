@@ -15,12 +15,17 @@ const (
 )
 
 // Isolate moves process `pid` to a `cgroup` cgroup.
-func Isolate(pid int, cgroup string) {
-	if err := addToCgroup(pid, path.Join(CGROUP_PATH, cgroup, CGROUP_PROCS)); err != nil {
-		log.Errorf("Error trying to add pids to cgroup (%s)", cgroup)
+func Isolate(pid int, cgroup string) (err error) {
+	if _, err = os.Stat(path.Join(CGROUP_PATH, cgroup)); os.IsNotExist(err) {
+		log.Errorf("Cgroup %s doesn't exist", path.Join(CGROUP_PATH, cgroup))
+		return
+	}
+	if err = addToCgroup(pid, path.Join(CGROUP_PATH, cgroup, CGROUP_PROCS)); err != nil {
+		log.Errorf("Error trying to add pid to cgroup (%s)", cgroup)
 	} else {
 		log.Infof("%d -> %s", pid, cgroup)
 	}
+	return
 }
 
 func addToCgroup(pid int, cgroupProcsFile string) error {
