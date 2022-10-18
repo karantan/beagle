@@ -60,7 +60,7 @@ func main() {
 					store.isolatedProcesses[p.PID] = true
 				}
 			}
-			if slackHook != "" {
+			if slackHook != "" && slackChan != "" {
 				msg := &slack.WebhookMessage{Text: body, Channel: slackChan}
 				if err := slack.PostWebhook(slackHook, msg); err != nil {
 					log.Error(err)

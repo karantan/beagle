@@ -12,7 +12,7 @@ let
   };
 in buildGoModule.override { go = nixpkgs.go_1_18; } rec {
   pname = "beagle";
-  version = "1.1.4";
+  version = "1.1.5";
 
   src = nix-gitignore.gitignoreSource [ ] ./.;
 
